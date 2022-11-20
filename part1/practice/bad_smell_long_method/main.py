@@ -9,55 +9,35 @@
 # по более узким функциям и написать их с нуля
 
 
+from typing import List
+
 csv = """Вася;39\nПетя;26\nВасилий Петрович;9"""
 
 
-def get_users_list():
-    # Чтение данных из строки
-    data = []
-    for line in csv.split('\n'):
+def read_users_list(users: str) -> List[dict]:
+    """Читать пользователей из файла и создавать словарь"""
+    users_list = []
+    for line in users.split('\n'):
         name, age = line.split(';')
-        data.append({'name': name, 'age': int(age)})
+        users_list.append({'name': name, 'age': int(age)})
+    return users_list
 
-    # Сортировка по возрасту по возрастанию
-    _new_data = []
-    used_person = set()
-    minimum_age_person = None
-    while len(used_person) != len(data):
-        if minimum_age_person is None:
-            for person in data:
-                if minimum_age_person is None:
-                    minimum_age_person = person
-                else:
-                    if person['name'] in used_person:
-                        continue
-                    else:
-                        if person['age'] < minimum_age_person['age']:
-                            minimum_age_person = person
-            _new_data.append(minimum_age_person)
-            used_person.add(minimum_age_person['name'])
-        local_minimum = None
-        for person in data:
-            if person['name'] in used_person:
-                continue
-            else:
-                if not local_minimum is None:
-                    if person['age'] < local_minimum['age']:
-                        local_minimum = person
-                else:
-                    local_minimum = person
-        _new_data.append(local_minimum)
-        used_person.add(local_minimum['name'])
 
-    # Фильтрация
-    result_data = []
-    for person in _new_data:
-        if person['age'] < 10:
-            continue
-        else:
-            result_data.append(person)
-    return result_data
+def sort_users_by_age(users: List[dict]) -> List[dict]:
+    """Сортировать пользователей по возрасту в порядке возрастания с помощью пузырьковой сортировки."""
+
+    for i in range(len(users) - 1):
+        for j in range(len(users) - i - 1):
+            if users[j]['age'] > users[j+1]['age']:
+                users[j], users[j+1] = users[j+1], users[j]
+    return users
+
+
+def get_users(users: str, age_threshold: int = 10) -> List[dict]:
+    """Получить пользователей из файла с возрастом ниже порогового значения"""
+    users_list = sort_users_by_age(read_users_list(users))
+    return [user for user in users_list if user['age'] < age_threshold]
 
 
 if __name__ == '__main__':
-    print(get_users_list())
+    print(get_users(csv, 50))
